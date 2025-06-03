@@ -31,21 +31,49 @@ export async function createTodo(req, res, next) {
 }
 
 export async function updateTodo(req, res, next) {
-  console.log("Update todo");
-  res.send(req.params.id);
+  const id = req.params.id;
+  if (!req.body) return next(createError(404, "Missing field"));
+  try {
+    await connectToDB();
+    const todo = await Todo.findById(id);
+    console.log(todo);
+    if (req.user.id !== todo.userId.toString())
+      return next(createError(403, "You are not authorized"));
+    todo.title = req.body.title || todo.title;
+    if (req.body.isCompleted !== undefined)
+      todo.isCompleted = req.body.isCompleted;
+    // todo.completed;
+    await todo.save();
+    res.status(200).json({ message: "Todo updated successfully", todo: todo });
+  } catch (error) {
+    next(createError(404, "Todo not found"));
+  }
 }
 
 export async function getTodo(req, res, next) {
-  connectToDB();
-  const todo = await Todo.findById(req.params.id);
-  if (!todo) return next(createError(404, "Todo not found"));
-  if (req.user.id !== todo.userId.toString())
-    return next(createError(403, "You are not authorized"));
+  try {
+    await connectToDB();
+    const todo = await Todo.findById(req.params.id);
+    if (!todo) return next(createError(404, "Todo not found"));
+    if (req.user.id !== todo.userId.toString())
+      return next(createError(403, "You are not authorized"));
 
-  res.status(200).json(todo);
+    res.status(200).json(todo);
+  } catch (error) {
+    next(createError(404, "Todo not found"));
+  }
 }
 
 export async function deleteTodo(req, res, next) {
-  console.log(req.params.id);
-  res.send(`delete todo with id: ${req.params.id}`);
+  try {
+    await connectToDB();
+    const todo = await Todo.findById(req.params.id);
+    if (!todo) return next(createError(404, "Todo not found"));
+    if (req.user.id !== todo.userId.toString())
+      return next(createError(403, "You are not authorized"));
+    await Todo.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Todo deleted successfully" });
+  } catch (error) {
+    next(createError(404, "Todo not found"));
+  }
 }
