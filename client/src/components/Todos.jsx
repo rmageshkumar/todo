@@ -7,6 +7,7 @@ import { CircleUserRound, Plus } from "lucide-react";
 import useSWR from "swr";
 import { Input } from "./ui/input";
 import EditTodo from "./EditTodo";
+import Profile from "./Profile";
 
 const fetcher = (url, options = {}) =>
   fetch(url, {
@@ -120,10 +121,37 @@ const Todos = () => {
       }
     );
   }
+
+  async function handleUpdate(formData) {
+    console.log("first", formData);
+    const { id, title } = formData;
+    console.log(formData);
+    await mutate(
+      async () => {
+        const res = await fetcher(`http://localhost:3000/api/todos/${id}`, {
+          method: "PUT",
+          body: { title },
+        });
+        if (res.error) {
+          handleError(res.error);
+        }
+        return data.map((todo) =>
+          todo._id === id ? { ...todo, title: res.title } : todo
+        );
+      },
+      {
+        optimisticData: data.map((todo) =>
+          todo._id === id ? { ...todo, title } : todo
+        ),
+        revalidate: true,
+        rollbackOnError: true,
+      }
+    );
+  }
   return (
     <div className="mx-auto mt-20 max-w-lg px-4 w-full flex flex-col gap-6">
-      <div>
-        <CircleUserRound />
+      <div className="flex justify-end">
+        <Profile />
       </div>
       <h1 className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-transparent font-bold text-4xl text-center mb-4 bg-clip-text">
         Todo App
@@ -173,7 +201,11 @@ const Todos = () => {
                   className="transition ease-in-out hover:cursor-pointer"
                   onClick={() => deleteTodo(todo._id)}
                 />
-                <EditTodo />
+                <EditTodo
+                  handleUpdate={handleUpdate}
+                  id={todo._id}
+                  title={todo.title}
+                />
               </div>
             </div>
           ))}

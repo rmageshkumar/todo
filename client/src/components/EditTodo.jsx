@@ -12,40 +12,43 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EditIcon } from "lucide-react";
+import { useState } from "react";
 
-function EditTodo() {
+function EditTodo({ title, id, handleUpdate }) {
+  const [updatedTitle, setUpdatedTitle] = useState(title);
+
   return (
     <Dialog>
-      <form>
+      <DialogTrigger asChild>
+        <EditIcon size={20} className="" />
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit Todo</DialogTitle>
+          <DialogDescription>
+            Make changes to your todo here. Click save when you&apos;re done.
+          </DialogDescription>
+        </DialogHeader>
         <DialogTrigger asChild>
-          <EditIcon size={20} className="" />
+          <form className="flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); handleUpdate({ id, title: updatedTitle }); }}>
+            <input type="hidden" name="id" value={id} />
+            <Label htmlFor="title">Previous Todo</Label>
+            <Input
+              id="title"
+              name="title"
+              value={updatedTitle}
+              onChange={(e) => setUpdatedTitle(e.target.value)}
+              className="col-span-3"
+            />
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button type="submit">Save changes</Button>
+            </DialogFooter>
+          </form>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit profile</DialogTitle>
-            <DialogDescription>
-              Make changes to your profile here. Click save when you&apos;re
-              done.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4">
-            <div className="grid gap-3">
-              <Label htmlFor="name-1">Name</Label>
-              <Input id="name-1" name="name" defaultValue="Pedro Duarte" />
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="username-1">Username</Label>
-              <Input id="username-1" name="username" defaultValue="@peduarte" />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button type="submit">Save changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
+      </DialogContent>
     </Dialog>
   );
 }
