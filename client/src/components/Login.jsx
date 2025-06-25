@@ -1,22 +1,80 @@
-import React from "react";
+import React, { useActionState, useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "@/actions/userActions";
 
 const Login = () => {
+  const Navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [state, formAction, ispending] = useActionState(login, {
+    success: null,
+    error: null,
+  });
+
+  useEffect(() => {
+    if (state.success) {
+      console.log(state.success);
+      setTimeout(() => {
+        Navigate("/");
+      }, 2000);
+    }
+  });
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+  console.log(formData);
+
   return (
     <div className="h-screen flex justify-center items-center transform -translate-y-16">
-      <form className="flex flex-col gap-6 max-w-xl w-full px-8">
+      <form
+        action={formAction}
+        className="flex flex-col gap-6 max-w-xl w-full px-8"
+      >
         <div className="flex flex-col gap-2">
           <Label htmlFor="Email">Email</Label>
-          <Input id="email" type="email" name="email" placeholder="Email" />
+          <Input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" placeholder="Password" />
+          <Input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
         </div>
-        <Button type="submit">Login</Button>
+        {state.success && (
+          <span className="text-green-500 message">
+            {state.success} {"Redirecting ..."}
+          </span>
+        )}
+        {state.error && (
+          <span className="text-red-500 message">
+            {state.error} {"Redirecting ..."}
+          </span>
+        )}
+        <Button disabled={ispending} type="submit">
+          {ispending ? "Loading..." : "Login"}
+        </Button>
         <span className="text-center text-gray-700">
           Don't have an account?{" "}
           <Link
