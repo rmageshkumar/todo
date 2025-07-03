@@ -5,11 +5,17 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-dotenv.config();
-
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
+dotenv.config();
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use("/api/user", AuthRoute);
